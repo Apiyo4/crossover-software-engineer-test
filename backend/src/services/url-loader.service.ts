@@ -23,6 +23,7 @@ export class UrlLoaderService {
 
   async loadUrlTextAndLinks (url: string): Promise<TextAndLinks> {
     const page = await this.browser.newPage()
+    await page.setDefaultNavigationTimeout(600000)
     await page.goto(url)
     await page.waitForSelector('body')
     const [text, links] = await Promise.all([await pageEval(page, domExtractText), await pageEval(page, domExtractHyperlinks)])
@@ -34,27 +35,28 @@ export class UrlLoaderService {
     const visited = new Set<string>()
     const queue: Array<{ url: string, level: number }> = [{ url, level: 0 }]
     const result: TextAndLinks = { text: '', links: [] }
-
     while (queue.length > 0) {
-      const current = queue.shift()
-      if (current == null) break
+      const currentBatch = queue.splice(0, queue.length)
+      const promises = currentBatch.map(async (current) => {
+        const { url: currentUrl, level } = current
+        if (visited.has(currentUrl) || level > 2) return
 
-      const { url: currentUrl, level } = current
-      if (visited.has(currentUrl) || level > 2) continue
+        visited.add(currentUrl)
 
-      visited.add(currentUrl)
+        const pageResult = await this.loadUrlTextAndLinks(currentUrl)
+        result.text += pageResult.text
+        const filteredPageResultLinks = [...new Set(pageResult.links.filter((link) => {
+          return !result.links.includes(link) && !result.links.includes(link + '/') && !visited.has(link) && !visited.has(link + '/') && this.isWebsiteAndHomepage(link)
+        }))]
+        result.links.push(...filteredPageResultLinks)
+        console.log(result.links, level)
 
-      const pageResult = await this.loadUrlTextAndLinks(currentUrl)
-      result.text += pageResult.text
-      const filteredPageResultLinks = [...new Set(pageResult.links.filter((link) => {
-        return !result.links.includes(link) && !visited.has(link) && this.isWebsiteAndHomepage(link)
-      }))]
-      result.links.push(...filteredPageResultLinks)
-      console.log(result.links, level)
+        for (const link of filteredPageResultLinks) {
+          queue.push({ url: link, level: level + 1 })
+        }
+      })
 
-      for (const link of filteredPageResultLinks) {
-        queue.push({ url: link, level: level + 1 })
-      }
+      await Promise.all(promises)
     }
     return result
   }
