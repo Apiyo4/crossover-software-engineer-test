@@ -31,7 +31,8 @@ export class UrlLoaderService {
     return { text, links }
   }
 
-  async loadUrlTextAndLinks (url: string, depth: number): Promise<TextAndLinks> {
+  async loadUrlTextAndLinks (url: string, depth?: number): Promise<TextAndLinks> {
+    const newDepth = typeof depth === 'undefined' ? 2 : depth
     const visited = new Set<string>()
     const queue: Array<{ url: string, level: number }> = [{ url, level: 0 }]
     const result: TextAndLinks = { text: '', links: [] }
@@ -39,7 +40,7 @@ export class UrlLoaderService {
       const currentBatch = queue.splice(0, queue.length)
       const promises = currentBatch.map(async (current) => {
         const { url: currentUrl, level } = current
-        if (visited.has(currentUrl) || level > depth) return
+        if (visited.has(currentUrl) || level > newDepth) return
 
         visited.add(currentUrl)
 

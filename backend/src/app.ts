@@ -4,7 +4,7 @@ import { Command } from 'commander'
 
 interface AppParameters {
   url: string
-  depth: number
+  depth?: number
 }
 
 export const DEFAULT_URL = 'https://www.kayako.com/'
@@ -23,7 +23,7 @@ export class App {
 
   async process (appParameters: AppParameters): Promise<void> {
     const extractedText = await this.urlLoader.loadUrlTextAndLinks(appParameters.url, appParameters.depth)
-    const count = (extractedText.text.toLocaleLowerCase().match(/kayako/ig) ?? []).length
+    const count = typeof extractedText.text === 'string' && extractedText.text.length > 1 ? (extractedText.text.toLocaleLowerCase().match(/kayako/ig) ?? []).length : 0
     console.log(`Found ${count} instances of 'kayako' in the body of the page`)
   }
 
