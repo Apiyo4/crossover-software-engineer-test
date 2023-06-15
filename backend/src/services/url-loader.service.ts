@@ -64,6 +64,6 @@ export class UrlLoaderService {
   isWebsiteAndHomepage (url: string): boolean {
     const urlPattern = /^(?:(?:https?|ftp):\/\/)?(?:www\.)?kayako\.com(?:\/(?!(?:[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]+\.(?:pdf|docx?|xlsx?|pptx?|jpe?g|png|gif|bmp|svg|mp4|mov|avi|mp3|wav|ogg)))(?![^#]*#)[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]+){0,2}$/i
 
-    return urlPattern.test(url)
+    return urlPattern.test(url) || url.includes('html')
   }
 }
