@@ -22,7 +22,7 @@ export class App {
   }
 
   async process (appParameters: AppParameters): Promise<void> {
-    const extractedText = await this.urlLoader.bfsLoadUrlTextAndLinks(appParameters.url, appParameters.depth)
+    const extractedText = await this.urlLoader.loadUrlTextAndLinks(appParameters.url, appParameters.depth)
     const count = (extractedText.text.toLocaleLowerCase().match(/kayako/ig) ?? []).length
     console.log(`Found ${count} instances of 'kayako' in the body of the page`)
   }

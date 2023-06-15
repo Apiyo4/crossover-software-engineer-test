@@ -21,7 +21,7 @@ export class UrlLoaderService {
   private constructor (private readonly browser: Browser) {
   }
 
-  async loadUrlTextAndLinks (url: string): Promise<TextAndLinks> {
+  async getLoadUrlTextAndLinks (url: string): Promise<TextAndLinks> {
     const page = await this.browser.newPage()
     await page.setDefaultNavigationTimeout(600000)
     await page.goto(url)
@@ -31,7 +31,7 @@ export class UrlLoaderService {
     return { text, links }
   }
 
-  async bfsLoadUrlTextAndLinks (url: string, depth: number): Promise<TextAndLinks> {
+  async loadUrlTextAndLinks (url: string, depth: number): Promise<TextAndLinks> {
     const visited = new Set<string>()
     const queue: Array<{ url: string, level: number }> = [{ url, level: 0 }]
     const result: TextAndLinks = { text: '', links: [] }
@@ -43,13 +43,12 @@ export class UrlLoaderService {
 
         visited.add(currentUrl)
 
-        const pageResult = await this.loadUrlTextAndLinks(currentUrl)
+        const pageResult = await this.getLoadUrlTextAndLinks(currentUrl)
         result.text += pageResult.text
         const filteredPageResultLinks = [...new Set(pageResult.links.filter((link) => {
           return !result.links.includes(link) && !result.links.includes(link + '/') && !visited.has(link) && !visited.has(link + '/') && this.isWebsiteAndHomepage(link)
         }))]
         result.links.push(...filteredPageResultLinks)
-        console.log(result.links, level)
 
         for (const link of filteredPageResultLinks) {
           queue.push({ url: link, level: level + 1 })
