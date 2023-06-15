@@ -4,9 +4,11 @@ import { Command } from 'commander'
 
 interface AppParameters {
   url: string
+  depth: number
 }
 
 export const DEFAULT_URL = 'https://www.kayako.com/'
+export const DEFAULT_DEPTH = '2'
 
 export class App {
   /* istanbul ignore next */
@@ -20,7 +22,7 @@ export class App {
   }
 
   async process (appParameters: AppParameters): Promise<void> {
-    const extractedText = await this.urlLoader.bfsLoadUrlTextAndLinks(appParameters.url)
+    const extractedText = await this.urlLoader.bfsLoadUrlTextAndLinks(appParameters.url, appParameters.depth)
     const count = (extractedText.text.toLocaleLowerCase().match(/kayako/ig) ?? []).length
     console.log(`Found ${count} instances of 'kayako' in the body of the page`)
   }
@@ -28,10 +30,12 @@ export class App {
   parseCli (argv: readonly string[] = process.argv): AppParameters {
     this.command
       .requiredOption('-u, --url <url>', 'URL to load', DEFAULT_URL)
+      .option('-d, --depth [depth]', 'Depth of crawling', DEFAULT_DEPTH)
 
     this.command.parse(argv)
     const options = this.command.opts()
+    const depth = typeof options.depth === 'string' ? parseInt(options.depth, 10) : parseInt(DEFAULT_DEPTH, 10)
 
-    return { url: options.url }
+    return { url: options.url, depth }
   }
 }

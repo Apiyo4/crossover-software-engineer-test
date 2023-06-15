@@ -31,7 +31,7 @@ export class UrlLoaderService {
     return { text, links }
   }
 
-  async bfsLoadUrlTextAndLinks (url: string): Promise<TextAndLinks> {
+  async bfsLoadUrlTextAndLinks (url: string, depth: number): Promise<TextAndLinks> {
     const visited = new Set<string>()
     const queue: Array<{ url: string, level: number }> = [{ url, level: 0 }]
     const result: TextAndLinks = { text: '', links: [] }
@@ -39,7 +39,7 @@ export class UrlLoaderService {
       const currentBatch = queue.splice(0, queue.length)
       const promises = currentBatch.map(async (current) => {
         const { url: currentUrl, level } = current
-        if (visited.has(currentUrl) || level > 2) return
+        if (visited.has(currentUrl) || level > depth) return
 
         visited.add(currentUrl)
 
